@@ -12,15 +12,23 @@ app.use(express.json());
 app.use(express.static('.')); // Serve static files from current directory
 
 // Database Connection
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
+// Database Connection
+let pool;
+if (process.env.DATABASE_URL) {
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
+}
 
 // Initialize Database Table
 const initDb = async () => {
+    if (!pool) {
+        console.log('No DATABASE_URL found. Running in local mode (in-memory).');
+        return;
+    }
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS contacts (
@@ -46,6 +54,17 @@ const initDb = async () => {
             );
         `);
         console.log('Database table "contacts" is ready.');
+
+        // Seeding Slider Images if Empty
+        const sliderCount = await pool.query('SELECT COUNT(*) FROM slider_images');
+        if (parseInt(sliderCount.rows[0].count) === 0) {
+            console.log('Seeding initial slider images...');
+            await pool.query(`
+                INSERT INTO slider_images (image_url) VALUES 
+                ('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920&h=1080&fit=crop'),
+                ('https://images.unsplash.com/photo-1558494949-efc025793ad1?q=80&w=1920&h=1080&fit=crop');
+            `);
+        }
     } catch (err) {
         console.error('Error initializing database:', err);
     }
