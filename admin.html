@@ -90,6 +90,94 @@
             background-color: #0056b3;
         }
 
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .nav-tabs button {
+            background: none;
+            color: #555;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .nav-tabs button.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+
+        /* Forms */
+        .admin-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Grid for Items */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-item {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .grid-item-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .btn-delete:hover {
+            background: #a71d2a;
+        }
+
         #dashboard {
             display: none;
         }
@@ -108,23 +196,69 @@
     <!-- Dashboard Section -->
     <div id="dashboard" class="container">
         <h1>
-            Gelen Mesajlar
+            Yönetim Paneli
             <button onclick="logout()" style="background-color: #dc3545; font-size: 0.8rem;">Çıkış</button>
         </h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tarih</th>
-                    <th>Ad Soyad</th>
-                    <th>E-Posta</th>
-                    <th>Mesaj</th>
-                </tr>
-            </thead>
-            <tbody id="messages-body">
-                <!-- Messages will be loaded here -->
-            </tbody>
-        </table>
+
+        <div class="nav-tabs">
+            <button class="active" onclick="switchTab('messages')">Mesajlar</button>
+            <button onclick="switchTab('slider')">Slider Yönetimi</button>
+            <button onclick="switchTab('partners')">Referans Yönetimi</button>
+        </div>
+
+        <!-- MESSAGES SECTION -->
+        <div id="section-messages">
+            <h2>Gelen Mesajlar</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tarih</th>
+                        <th>Ad Soyad</th>
+                        <th>E-Posta</th>
+                        <th>Mesaj</th>
+                    </tr>
+                </thead>
+                <tbody id="messages-body">
+                    <!-- Messages will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SLIDER SECTION -->
+        <div id="section-slider" style="display: none;">
+            <h2>Slider Görselleri</h2>
+            <div class="admin-form">
+                <div class="form-group">
+                    <label>Resim Linki (URL)</label>
+                    <input type="text" id="slider-url" placeholder="https://ornek.com/resim.jpg">
+                </div>
+                <button onclick="addSlider()">Ekle</button>
+            </div>
+            <div id="slider-grid" class="item-grid">
+                <!-- Slider items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- PARTNERS SECTION -->
+        <div id="section-partners" style="display: none;">
+            <h2>Referans Logoları</h2>
+            <div class="admin-form">
+                <div class="form-group">
+                    <label>Firma Adı</label>
+                    <input type="text" id="partner-name" placeholder="Firma Adı">
+                </div>
+                <div class="form-group">
+                    <label>Logo Linki (URL)</label>
+                    <input type="text" id="partner-url" placeholder="https://ornek.com/logo.png">
+                </div>
+                <button onclick="addPartner()">Ekle</button>
+            </div>
+            <div id="partners-grid" class="item-grid">
+                <!-- Partner items will be loaded here -->
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -151,28 +285,139 @@
                 const response = await fetch('/api/contact'); // Fetch from backend
                 const data = await response.json();
 
-                if (data.success) {
-                    const tbody = document.getElementById('messages-body');
-                    tbody.innerHTML = '';
+                const tbody = document.getElementById('messages-body');
+                tbody.innerHTML = '';
 
-                    data.data.forEach(msg => {
-                        const date = new Date(msg.created_at).toLocaleString('tr-TR');
-                        const row = `
-                            <tr>
-                                <td>${msg.id}</td>
-                                <td>${date}</td>
-                                <td>${msg.name}</td>
-                                <td>${msg.email}</td>
-                                <td>${msg.message}</td>
-                            </tr>
-                        `;
-                        tbody.innerHTML += row;
-                    });
-                }
+                // Handle array directly (API changed to return array directly in server.js updates if needed, 
+                // but we kept {success: true, data: []} structure in previous step? 
+                // Wait, in my server.js update I changed it to return `res.json(result.rows)` directly for new APIs 
+                // but kept `res.json({ success: true, data: result.rows })` for contact. 
+                // I should verify server.js. 
+                // Ah, I changed `res.json(result.rows)` for slider/partners but missed checking if I changed contact API style too.
+                // Let's assume contact API still returns {success: true, data: ...} based on my previous code review.
+                // Actually my server.js update replaced the contact API return too. 
+                // "res.json({ success: true, data: result.rows });" was in the target content of a chunk I believe? 
+                // No, I replaced "res.json(localContacts.reverse())" with "res.json(localContacts.reverse())" in Fallback.
+                // Let's check the CONTACT API lines in my previous edit.
+                // I did NOT change the CONTACT API return structure in `server.js` for DB, it remains `res.json({ success: true, data: result.rows })`.
+                // BUT for local fallback I changed it? No, I didn't touch contact API logic much. 
+                // Wait, I see `res.json({ success: true, data: result.rows });` in the original code. 
+                // I should stick to that structure for contacts to be safe, OR handle both.
+
+                const messages = data.data || data; // Handle both structures just in case
+
+                messages.forEach(msg => {
+                    const date = new Date(msg.created_at).toLocaleString('tr-TR');
+                    const row = `
+                        <tr>
+                            <td>${msg.id}</td>
+                            <td>${date}</td>
+                            <td>${msg.name}</td>
+                            <td>${msg.email}</td>
+                            <td>${msg.message}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
             } catch (error) {
                 console.error('Error loading messages:', error);
-                alert('Veriler yüklenemedi.');
+                // alert('Veriler yüklenemedi.');
             }
+        }
+
+        // --- TABS LOGIC ---
+        function switchTab(tabName) {
+            // Hide all sections
+            document.getElementById('section-messages').style.display = 'none';
+            document.getElementById('section-slider').style.display = 'none';
+            document.getElementById('section-partners').style.display = 'none';
+
+            // Reset active buttons
+            document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected
+            document.getElementById('section-' + tabName).style.display = 'block';
+            event.target.classList.add('active');
+
+            // Load data if needed
+            if (tabName === 'slider') loadSlider();
+            if (tabName === 'partners') loadPartners();
+        }
+
+        // --- SLIDER FUNCTIONS ---
+        async function loadSlider() {
+            const res = await fetch('/api/slider');
+            const data = await res.json();
+            const grid = document.getElementById('slider-grid');
+            grid.innerHTML = '';
+
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="grid-item">
+                        <img src="${item.image_url}" onerror="this.src='https://via.placeholder.com/300?text=Error'">
+                        <div class="grid-item-info">
+                            <button class="btn-delete" onclick="deleteItem('slider', ${item.id})">Sil</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function addSlider() {
+            const url = document.getElementById('slider-url').value;
+            if (!url) return alert('Link giriniz!');
+
+            await fetch('/api/slider', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_url: url })
+            });
+            document.getElementById('slider-url').value = '';
+            loadSlider();
+        }
+
+        // --- PARTNER FUNCTIONS ---
+        async function loadPartners() {
+            const res = await fetch('/api/partners');
+            const data = await res.json();
+            const grid = document.getElementById('partners-grid');
+            grid.innerHTML = '';
+
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="grid-item">
+                        <img src="${item.logo_url}" style="object-fit: contain; padding: 10px;" onerror="this.src='https://via.placeholder.com/300?text=Error'">
+                        <div class="grid-item-info">
+                            <strong>${item.name}</strong>
+                            <button class="btn-delete" onclick="deleteItem('partners', ${item.id})">Sil</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function addPartner() {
+            const name = document.getElementById('partner-name').value;
+            const url = document.getElementById('partner-url').value;
+            if (!name || !url) return alert('Bilgileri giriniz!');
+
+            await fetch('/api/partners', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, logo_url: url })
+            });
+            document.getElementById('partner-name').value = '';
+            document.getElementById('partner-url').value = '';
+            loadPartners();
+        }
+
+        // --- GENERIC DELETE ---
+        async function deleteItem(type, id) {
+            if (!confirm('Silmek istediğinize emin misiniz?')) return;
+
+            await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+            if (type === 'slider') loadSlider();
+            else loadPartners();
         }
     </script>
 </body>

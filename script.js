@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Mobile Menu Toggle ---
     const mobileBtn = document.querySelector('.mobile-menu-btn');
@@ -16,90 +16,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 3D Wheel Slider Logic ---
-    const wheel = document.querySelector('.wheel');
-    const items = document.querySelectorAll('.wheel-item');
-    const btnUp = document.querySelector('.btn-up');
-    const btnDown = document.querySelector('.btn-down');
+    // --- Dynamic Content Fetching ---
 
-    if (wheel && items.length > 0) {
-        let currentAngle = 0;
-        let targetAngle = 0;
-        // Adjust radius based on window height to keep proportion
-        const radius = window.innerHeight * 0.8;
-        const theta = 360 / items.length;
+    // 1. Fetch & Render Partners
+    async function initPartners() {
+        try {
+            const res = await fetch('/api/partners');
+            const partners = await res.json();
+            const container = document.getElementById('partners-wrapper');
 
-        // Initialize positions
-        items.forEach((item, index) => {
-            const angle = theta * index;
-            item.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
-            item.dataset.index = index;
-        });
-
-        function updateWheel() {
-            currentAngle += (targetAngle - currentAngle) * 0.1;
-            wheel.style.transform = `translateZ(-${radius}px) rotateX(${-currentAngle}deg)`;
-
-            // Highlight active item
-            items.forEach((item, index) => {
-                const itemAngle = theta * index;
-                let diff = (itemAngle - currentAngle) % 360;
-                if (diff < -180) diff += 360;
-                if (diff > 180) diff -= 360;
-
-                if (Math.abs(diff) < theta / 2) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-
-            requestAnimationFrame(updateWheel);
-        }
-
-        updateWheel();
-
-        // Control Buttons
-        if (btnUp && btnDown) {
-            btnUp.addEventListener('click', () => {
-                targetAngle -= theta;
-                resetAutoRotate();
-            });
-
-            btnDown.addEventListener('click', () => {
-                targetAngle += theta;
-                resetAutoRotate();
-            });
-        }
-
-        // Mouse Wheel Control
-        let scrollTimeout;
-        window.addEventListener('wheel', (e) => {
-            if (window.scrollY < 500) {
-                targetAngle += e.deltaY * 0.1;
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    const nearestIndex = Math.round(targetAngle / theta);
-                    targetAngle = nearestIndex * theta;
-                }, 100);
-                resetAutoRotate();
+            if (container && partners.length > 0) {
+                container.innerHTML = '';
+                partners.forEach(partner => {
+                    const img = document.createElement('img');
+                    img.src = partner.logo_url;
+                    img.alt = partner.name;
+                    img.className = 'partner-logo';
+                    img.onerror = () => { img.style.display = 'none'; }; // Hide broken images
+                    container.appendChild(img);
+                });
             }
-        }, { passive: false });
-
-        // Auto Rotate
-        let autoRotateTimer;
-        function startAutoRotate() {
-            autoRotateTimer = setInterval(() => {
-                targetAngle += theta;
-            }, 5000);
+        } catch (err) {
+            console.error('Failed to load partners:', err);
         }
+    }
 
-        function resetAutoRotate() {
-            clearInterval(autoRotateTimer);
+    // 2. Fetch & Render Slider + Init 3D Logic
+    async function initSlider() {
+        try {
+            const res = await fetch('/api/slider');
+            const itemsData = await res.json();
+            const wheel = document.getElementById('wheel-wrapper');
+
+            if (wheel && itemsData.length > 0) {
+                wheel.innerHTML = '';
+                itemsData.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'wheel-item';
+                    div.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${item.image_url}')`;
+
+                    // Optional: You can make content dynamic too if you extend the DB schema
+                    div.innerHTML = `
+                        <div class="wheel-content">
+                            <h1>Poli Bilişim</h1>
+                            <p>Kurumsal Teknoloji Çözümleri</p>
+                        </div>
+                    `;
+                    wheel.appendChild(div);
+                });
+
+                // Start 3D Logic *after* content is ready
+                start3DSlider();
+            }
+        } catch (err) {
+            console.error('Failed to load slider:', err);
+        }
+    }
+
+    // Execute Fetches
+    await initPartners();
+    await initSlider();
+
+
+    // --- 3D Wheel Slider Logic (Wrapped in function) ---
+    function start3DSlider() {
+        const wheel = document.querySelector('.wheel');
+        const items = document.querySelectorAll('.wheel-item');
+        const btnUp = document.querySelector('.btn-up');
+        const btnDown = document.querySelector('.btn-down');
+
+        if (wheel && items.length > 0) {
+            let currentAngle = 0;
+            let targetAngle = 0;
+            const radius = window.innerHeight * 0.8;
+            const theta = 360 / items.length;
+
+            items.forEach((item, index) => {
+                const angle = theta * index;
+                item.style.transform = `rotateX(${angle}deg) translateZ(${radius}px)`;
+                item.dataset.index = index;
+            });
+
+            function updateWheel() {
+                currentAngle += (targetAngle - currentAngle) * 0.1;
+                wheel.style.transform = `translateZ(-${radius}px) rotateX(${-currentAngle}deg)`;
+
+                items.forEach((item, index) => {
+                    const itemAngle = theta * index;
+                    let diff = (itemAngle - currentAngle) % 360;
+                    if (diff < -180) diff += 360;
+                    if (diff > 180) diff -= 360;
+
+                    if (Math.abs(diff) < theta / 2) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+
+                requestAnimationFrame(updateWheel);
+            }
+
+            updateWheel();
+
+            if (btnUp && btnDown) {
+                // Remove old listeners if any (cloning is a quick hack, but better to just add once)
+                // Since this runs once after fetch, simple addEventListener is fine.
+                btnUp.onclick = () => {
+                    targetAngle -= theta;
+                    resetAutoRotate();
+                };
+
+                btnDown.onclick = () => {
+                    targetAngle += theta;
+                    resetAutoRotate();
+                };
+            }
+
+            let scrollTimeout;
+            window.addEventListener('wheel', (e) => {
+                if (window.scrollY < 500) {
+                    targetAngle += e.deltaY * 0.1;
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        const nearestIndex = Math.round(targetAngle / theta);
+                        targetAngle = nearestIndex * theta;
+                    }, 100);
+                    resetAutoRotate();
+                }
+            }, { passive: false });
+
+            let autoRotateTimer;
+            function startAutoRotate() {
+                autoRotateTimer = setInterval(() => {
+                    targetAngle += theta;
+                }, 5000);
+            }
+
+            function resetAutoRotate() {
+                clearInterval(autoRotateTimer);
+                startAutoRotate();
+            }
+
             startAutoRotate();
         }
-
-        startAutoRotate();
     }
 
     // --- Smooth Scroll for Anchors ---
@@ -122,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Contact Form Submission ---
-    const contactForm = document.querySelector('form'); // Assuming only one form
+    const contactForm = document.querySelector('form');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -138,9 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/api/contact', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
@@ -154,11 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Sunucuyla bağlantı kurulamadı. Lütfen daha sonra tekrar deneyiniz.');
+                alert('Sunucuyla bağlantı kurulamadı.');
             } finally {
                 submitBtn.textContent = originalBtnText;
                 submitBtn.disabled = false;
             }
         });
     }
+
 });

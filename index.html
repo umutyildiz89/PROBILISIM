@@ -41,47 +41,8 @@
     <!-- 3D Wheel Slider -->
     <section id="home" class="wheel-slider-section">
         <div class="wheel-container">
-            <div class="wheel">
-                <!-- Slide 1 -->
-                <div class="wheel-item"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1920');">
-                    <div class="wheel-content">
-                        <h1>Geleceği Şekillendiren Teknoloji</h1>
-                        <p>İşletmeniz için inovatif çözümler.</p>
-                    </div>
-                </div>
-                <!-- Slide 2 -->
-                <div class="wheel-item"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504384308090-c54be3853247?auto=format&fit=crop&q=80&w=1920');">
-                    <div class="wheel-content">
-                        <h1>Siber Güvenlikte Lider</h1>
-                        <p>Verileriniz bizimle güvende.</p>
-                    </div>
-                </div>
-                <!-- Slide 3 -->
-                <div class="wheel-item"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1920');">
-                    <div class="wheel-content">
-                        <h1>Global Vizyon</h1>
-                        <p>Dünya standartlarında hizmet.</p>
-                    </div>
-                </div>
-                <!-- Slide 4 -->
-                <div class="wheel-item"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1920');">
-                    <div class="wheel-content">
-                        <h1>Dijital Dönüşüm</h1>
-                        <p>İşinizi geleceğe taşıyoruz.</p>
-                    </div>
-                </div>
-                <!-- Slide 5 -->
-                <div class="wheel-item"
-                    style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1920');">
-                    <div class="wheel-content">
-                        <h1>Bulut Çözümleri</h1>
-                        <p>Esnek ve ölçeklenebilir altyapı.</p>
-                    </div>
-                </div>
+            <div class="wheel" id="wheel-wrapper">
+                <!-- Slider items will be loaded here dynamically -->
             </div>
             <div class="wheel-overlay"></div>
 
@@ -98,12 +59,8 @@
     <section class="partners-section">
         <div class="container">
             <h3 class="partners-title">Çözüm Ortaklarımız</h3>
-            <div class="partners-grid">
-                <img src="fenixpyre.webp" alt="FenixPyre" class="partner-logo">
-                <img src="fortinet.webp" alt="Fortinet" class="partner-logo">
-                <img src="microsoft-768x164.webp" alt="Microsoft" class="partner-logo">
-                <img src="paloalto.webp" alt="Palo Alto Networks" class="partner-logo">
-                <img src="utimaco.webp" alt="Utimaco" class="partner-logo">
+            <div class="partners-grid" id="partners-wrapper">
+                <!-- Partners will be loaded here dynamically -->
             </div>
         </div>
     </section>
@@ -193,23 +150,23 @@
                         <h4>Telefon</h4>
                         <p>+90 (212) 555 00 00</p>
                     </div>
-                    <form action="#" method="POST" class="contact-form">
-                        <div class="form-group">
-                            <label for="name">Adınız Soyadınız</label>
-                            <input type="text" id="name" name="name" placeholder="Adınız Soyadınız" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">E-posta Adresiniz</label>
-                            <input type="email" id="email" name="email" placeholder="ornek@sirket.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Mesajınız</label>
-                            <textarea id="message" name="message" rows="5" placeholder="Size nasıl yardımcı olabiliriz?"
-                                required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Gönder</button>
-                    </form>
                 </div>
+                <form action="#" method="POST" class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Adınız Soyadınız</label>
+                        <input type="text" id="name" name="name" placeholder="Adınız Soyadınız" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-posta Adresiniz</label>
+                        <input type="email" id="email" name="email" placeholder="ornek@sirket.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Mesajınız</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Size nasıl yardımcı olabiliriz?"
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Gönder</button>
+                </form>
             </div>
     </section>
 
