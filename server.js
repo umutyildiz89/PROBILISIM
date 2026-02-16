@@ -55,15 +55,22 @@ const initDb = async () => {
         `);
         console.log('Database table "contacts" is ready.');
 
-        // Seeding Slider Images if Empty
-        const sliderCount = await pool.query('SELECT COUNT(*) FROM slider_images');
-        if (parseInt(sliderCount.rows[0].count) === 0) {
-            console.log('Seeding initial slider images...');
+        // Seeding / Updating Slider Images
+        const targetImage = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1920'; // The "Chip" image
+        const checkResult = await pool.query('SELECT * FROM slider_images WHERE image_url = $1', [targetImage]);
+
+        if (checkResult.rows.length === 0) {
+            console.log('Target image not found. Refreshing slider with premium content...');
+            await pool.query('DELETE FROM slider_images'); // Start fresh for the new look
             await pool.query(`
                 INSERT INTO slider_images (image_url) VALUES 
-                ('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920&h=1080&fit=crop'),
-                ('https://images.unsplash.com/photo-1558494949-efc025793ad1?q=80&w=1920&h=1080&fit=crop');
+                ('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1920'), -- Chip / High Tech
+                ('https://images.unsplash.com/photo-1558494949-efc025793ad1?q=80&w=1920'), -- Server Room
+                ('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920'), -- Global Network
+                ('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1920'), -- Tech Repair / Shop
+                ('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1920'); -- Digital / Matrix
             `);
+            console.log('Slider updated with 5 new images.');
         }
     } catch (err) {
         console.error('Error initializing database:', err);
