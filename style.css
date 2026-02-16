@@ -138,20 +138,20 @@ img {
     object-fit: contain;
 }
 
-.main-nav ul {
+/* Main Navigation */
+.main-nav>ul {
     display: flex;
     gap: 30px;
     align-items: center;
-    align-items: center;
 }
 
-.main-nav ul li {
+.main-nav>ul>li {
     margin-left: 30px;
     position: relative;
     /* For dropdown positioning */
 }
 
-.main-nav ul li a {
+.main-nav>ul>li>a {
     font-weight: 600;
     font-size: 0.95rem;
     color: var(--dark);
@@ -162,8 +162,8 @@ img {
     gap: 5px;
 }
 
-.main-nav ul li a:hover,
-.main-nav ul li a.active {
+.main-nav>ul>li>a:hover,
+.main-nav>ul>li>a.active {
     color: var(--primary);
 }
 
