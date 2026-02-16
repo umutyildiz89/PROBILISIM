@@ -16,6 +16,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- Mobile Dropdown Toggle ---
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(dropdown => {
+        const toggleBtn = dropdown.querySelector('.dropdown-toggle');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                // Only prevent default on mobile/tablet widths where hover isn't primary
+                if (window.innerWidth <= 768) {
+                    e.preventDefault(); // Stop link navigation
+                    dropdown.classList.toggle('active');
+                }
+            });
+        }
+    });
+
     // --- Dynamic Content Fetching ---
 
     // 1. Fetch & Render Partners
